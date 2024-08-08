@@ -1,0 +1,13 @@
+---
+- name: Install Redis packages
+  package:
+    name: "{{ redis_packages }}"
+    state: present
+  become: true
+
+- name: Start and enable Redis service
+  systemd:
+    name: redis
+    state: started
+    enabled: true
+  become: true
