@@ -1,4 +1,10 @@
 ---
+- name: Update apt cache (Ubuntu)
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
 - name: Ensure dependencies are installed on Ubuntu
   apt:
     name: "{{ item }}"
@@ -7,6 +13,7 @@
     - build-essential
     - tcl
   when: ansible_os_family == "Debian"
+  become: yes
 
 - name: Ensure dependencies are installed on RedHat
   yum:
@@ -17,6 +24,7 @@
     - make
     - tcl
   when: ansible_os_family == "RedHat"
+  become: yes
 
 - name: Download Redis tarball
   get_url:
@@ -37,6 +45,7 @@
     make
     make install
   when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
+  become: yes
 
 - name: Configure Redis
   shell: |
@@ -44,6 +53,7 @@
     mkdir -p /etc/redis /var/lib/redis
     cp redis.conf /etc/redis
   when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
+  become: yes
 
 - name: Create Redis systemd unit file
   copy:
@@ -52,16 +62,15 @@
       [Unit]
       Description=Redis In-Memory Data Store
       After=network.target
-
       [Service]
       User=root
       ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
       ExecStop=/usr/local/bin/redis-cli shutdown
       Restart=always
-
       [Install]
       WantedBy=multi-user.target
   when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
+  become: yes
 
 - name: Start Redis and enable on boot
   systemd:
@@ -69,4 +78,4 @@
     state: started
     enabled: yes
   when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
-
+  become: yes
